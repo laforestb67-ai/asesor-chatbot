@@ -1,1 +1,51 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Asesor educación financiera</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font:16px/1.4 system-ui;margin:16px;text-align:center}
+    textarea{width:90%;height:80px}
+    button{margin:8px;padding:10px 14px}
+    #out{margin-top:12px;white-space:pre-wrap}
+  </style>
+</head>
+<body>
+  <h1>Asesor educación financiera</h1>
+  <textarea id="q" placeholder="Écris ou parle..."></textarea><br/>
+  <button id="speak">🎤 Parler</button>
+  <button id="send">Envoyer</button>
+  <div id="out"></div>
+
+<script>
+const endpoint = "/chat";
+const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec;
+if (recognition) {
+  rec = new recognition();
+  rec.lang = "es-ES";
+  rec.onresult = e => {
+    const text = e.results[0][0].transcript;
+    document.getElementById('q').value = text;
+  };
+}
+document.getElementById('speak').onclick = () => rec && rec.start();
+document.getElementById('send').onclick = async () => {
+  const question = document.getElementById('q').value;
+  const res = await fetch(endpoint, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({question})
+  });
+  const data = await res.json();
+  const reply = data.reply || "";
+  document.getElementById('out').textContent = reply;
+  const utter = new SpeechSynthesisUtterance(reply);
+  utter.lang = "es-ES";
+  speechSynthesis.speak(utter);
+};
+</script>
+</body>
+</html>
 
