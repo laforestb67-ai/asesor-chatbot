@@ -19,7 +19,13 @@ def chat():
     question = data.get("question", "").strip()
     if not question:
         return jsonify({"reply": "No escuché nada."})
-    reply = f"Asesor: recibí tu pregunta → {question}"
+    if "ahorro" in question.lower():
+    reply = "Ahorrar es separar una parte de tus ingresos para el futuro."
+elif "crédito" in question.lower():
+    reply = "Un crédito es dinero que te presta un banco y debes devolver con intereses."
+else:
+    reply = "Puedo hablarte de ahorro, crédito, presupuesto o deudas. ¿Qué tema te interesa?"
+
     return jsonify({"reply": reply})
 
 if __name__ == "__main__":
