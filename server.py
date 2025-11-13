@@ -38,9 +38,12 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
 if __name__ == "__main__":
     import os
-    if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 8000))
+    port = os.environ.get("PORT")
+    if port is None:
+        port = 10000  # Valeur par défaut si on exécute localement
+    else:
+        port = int(port)
+    print(f"-----> Starting server on port {port}")
     app.run(host="0.0.0.0", port=port)
 
 
