@@ -4,32 +4,35 @@ from openai import OpenAI
 
 app = Flask(__name__)
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.get("/")
 def home():
-    return "Chatbot Python en ligne."
+    return "Chatbot en ligne."
 
 @app.post("/chat")
 def chat():
-    data = request.get_json()
-    message = data.get("message")
-
-    if not message:
-        return jsonify({"error": "Message manquant"}), 400
-
     try:
-        completion = client.chat.completions.create(
+        data = request.get_json()
+        message = data.get("message")
+
+        if not message:
+            return jsonify({"error": "Message manquant"}), 400
+
+        response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "Assistant éducatif clair et rigoureux."},
                 {"role": "user", "content": message}
             ]
         )
-        answer = completion.choices[0].message.content
+
+        answer = response.choices[0].message.content
+
         return jsonify({"answer": answer})
 
     except Exception as e:
+        print("Erreur:", e)
         return jsonify({"error": "Erreur interne"}), 500
 
 
