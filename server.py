@@ -1,49 +1,39 @@
+from flask import Flask, request, jsonify
 import os
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
+from openai import OpenAI
 
-app = Flask(__name__, static_folder="static")
-CORS(app)
+app = Flask(__name__)
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.get("/")
-def root():
-    return send_from_directory("static", "index.html")
+def home():
+    return "Chatbot Python en ligne."
 
-@app.get("/health")
-def health():
-    return jsonify({"ok": True})
-
-@app.post("/chat")
 @app.post("/chat")
 def chat():
-    data = request.get_json(silent=True) or {}
-    question = data.get("question", "").strip().lower()
-    if not question:
-        return jsonify({"reply": "No escuché nada."})
+    data = request.get_json()
+    message = data.get("message")
 
-    if "ahorro" in question:
-        reply = "Ahorrar es separar una parte de tus ingresos para el futuro."
-    elif "crédito" in question:
-        reply = "Un crédito es dinero que te presta un banco y debes devolver con intereses."
-    elif "presupuesto" in question:
-        reply = "Un presupuesto es una planificación de tus ingresos y gastos para mantener el equilibrio financiero."
-    else:
-        reply = "Puedo hablarte de ahorro, crédito, presupuesto o deudas. ¿Qué tema te interesa?"
+    if not message:
+        return jsonify({"error": "Message manquant"}), 400
 
-    return jsonify({"reply": reply})
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Assistant éducatif clair et rigoureux."},
+                {"role": "user", "content": message}
+            ]
+        )
+        answer = completion.choices[0].message.content
+        return jsonify({"answer": answer})
+
+    except Exception as e:
+        return jsonify({"error": "Erreur interne"}), 500
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-if __name__ == "__main__":
-    import os
-    port = os.environ.get("PORT")
-    if port is None:
-        port = 10000  # Valeur par défaut si on exécute localement
-    else:
-        port = int(port)
-    print(f"-----> Starting server on port {port}")
-    app.run(host="0.0.0.0", port=port)
-
 
