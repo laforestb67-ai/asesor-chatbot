@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 from openai import OpenAI
 
 app = Flask(__name__)
+CORS(app)  # autorise les appels depuis ton site (Google Sites)
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -13,7 +15,7 @@ def home():
 @app.post("/chat")
 def chat():
     try:
-        data = request.get_json()
+        data = request.get_json(force=True)
         message = data.get("message")
 
         if not message:
@@ -32,11 +34,10 @@ def chat():
         return jsonify({"answer": answer})
 
     except Exception as e:
-        print("Erreur:", e)
-        return jsonify({"error": "Erreur interne"}), 500
+        print("Erreur serveur:", e)
+        return jsonify({"error": "Erreur interne du chatbot"}), 500
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
